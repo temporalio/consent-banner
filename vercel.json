@@ -3,6 +3,13 @@
   "framework": null,
   "buildCommand": "pnpm build",
   "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://temporal.io/temporal-cookie-policy",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/v1/cookie-banner.js",
