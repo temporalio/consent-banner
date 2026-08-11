@@ -1,0 +1,43 @@
+{
+  "name": "@temporalio/cookie-banner",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Framework-neutral cookie-consent banner web component and consent-regime API for *.temporal.io properties. Deployed at consent.temporal.io.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./core": "./src/core/index.ts",
+    "./bundle": "./dist/cookie-banner.iife.js"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/temporalio/consent.git"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:bundle": "vite build && vitest run",
+    "check": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "lit": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.4.1",
+    "vitest": "^3.0.6"
+  }
+}
