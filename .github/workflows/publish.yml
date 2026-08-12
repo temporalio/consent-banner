@@ -1,0 +1,57 @@
+name: Publish package
+
+# Publishes @temporalio/cookie-banner to GitHub Packages when a GitHub Release
+# is published. Cutting the Release (from a vX.Y.Z tag) is the deliberate,
+# human step; this workflow reacts to it — merging a PR does NOT publish.
+#
+# Before publishing: bump "version" in package.json, tag it (vX.Y.Z), and draft
+# a Release for that tag. npm refuses to republish an existing version, so the
+# version bump gates every publish.
+on:
+  release:
+    types: [published]
+
+# Least-privilege token: read the repo, write to GitHub Packages. The built-in
+# GITHUB_TOKEN is ephemeral and auto-scoped — no personal PAT is stored here.
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js and GitHub Packages auth
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          # Writes an .npmrc that authenticates the @temporalio scope against
+          # GitHub Packages using NODE_AUTH_TOKEN (set per-step below).
+          registry-url: https://npm.pkg.github.com
+          scope: "@temporalio"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check
+        run: pnpm check
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build the distributable bundles
+        run: pnpm build
+
+      - name: Publish to GitHub Packages
+        # --no-git-checks: the build writes gitignored dist/ output, so the tree
+        # is "dirty" in CI; the checked-out tag already pins the exact commit.
+        run: pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
