@@ -1,28 +1,28 @@
-import { LitElement, html, css, nothing, type TemplateResult } from 'lit';
+import { LitElement, html, css, nothing, type TemplateResult } from "lit";
 import {
   clearConsentCookie,
   defaultConsent,
   readConsentFromDocumentCookie,
   writeConsentCookie,
   type ConsentRecord,
-} from '../core/consent';
+} from "../core/consent";
 import {
   isConsentRegime,
   shouldRepromptOnRegimeChange,
   type ConsentRegime,
-} from '../core/consent-region';
+} from "../core/consent-region";
 import {
   dispatchConsentChange,
   persistConsent,
   persistDoNotSell,
   persistRegime,
   pushConsentSignals,
-} from './consent-sync';
+} from "./consent-sync";
 
 /** Global event a host can dispatch on `window` to (re)open the notice, e.g. a
  *  footer "Cookie preferences" link. Framework-neutral alternative to holding a
  *  reference and calling `.open()`. */
-export const OPEN_EVENT = 'temporal:cookie-banner-open';
+export const OPEN_EVENT = "temporal:cookie-banner-open";
 
 /** Best-effort JSON read from localStorage (mirrors persistStore's format).
  *  Never throws — private mode / quota / corrupt value all yield null. */
@@ -79,8 +79,8 @@ export class TemporalCookieBanner extends LitElement {
     _advertising: { state: true },
     _doNotSell: { state: true },
     _consent: { state: true },
-    policyUrl: { type: String, attribute: 'policy-url' },
-    geoEndpoint: { type: String, attribute: 'geo-endpoint' },
+    policyUrl: { type: String, attribute: "policy-url" },
+    geoEndpoint: { type: String, attribute: "geo-endpoint" },
   };
 
   // Gate first render behind mount + geo so opt-out visitors never flash the
@@ -96,21 +96,22 @@ export class TemporalCookieBanner extends LitElement {
   _advertising = false;
   _doNotSell = false;
 
-  _regime: ConsentRegime = 'opt_in';
+  _regime: ConsentRegime = "opt_in";
   _consent: ConsentRecord = defaultConsent();
 
   // Cookie-policy link target. Defaults to the apex ABSOLUTE URL so the link
   // resolves everywhere the component is embedded (docs / learn / pages, which
   // are not under temporal.io's routing); override per host via the `policy-url`
   // attribute.
-  policyUrl = 'https://temporal.io/temporal-cookie-policy';
+  policyUrl = "https://temporal.io/temporal-cookie-policy";
 
   // Geolocation endpoint that resolves the visitor's consent regime. Defaults to
-  // the same-origin `/api/geo` (the host site's own route). Hosts without that
-  // route (docs / learn / pages) point this at the canonical absolute endpoint,
-  // e.g. `geo-endpoint="https://consent.temporal.io/api/geo"`. Accepts absolute
-  // or root-relative URLs; forwarded testing params are merged in `fetchGeo`.
-  geoEndpoint = '/api/geo';
+  // the canonical absolute endpoint so every embedding host (temporal.io, docs,
+  // learn, pages, Marketo) resolves consent from one source with no per-host
+  // config. A host that prefers its own same-origin route can override via
+  // `geo-endpoint="/api/geo"`. Accepts absolute or root-relative URLs; forwarded
+  // testing params are merged in `fetchGeo`.
+  geoEndpoint = "https://consent.temporal.io/api/geo";
 
   // Non-reactive: the last COMMITTED do-not-sell value (distinct from the live
   // toggle above, so an explicit decision can detect a change against it).
@@ -123,24 +124,24 @@ export class TemporalCookieBanner extends LitElement {
   private _initialized = false;
 
   private readonly GEO_FETCH_TIMEOUT_MS = 3000;
-  private readonly GEO_RECONCILED_KEY = 'consent-geo-reconciled';
+  private readonly GEO_RECONCILED_KEY = "consent-geo-reconciled";
 
   private readonly _onOpenEvent = () => this.open();
 
   constructor() {
     super();
-    const storedConsent = readJSON<ConsentRecord>('consent');
+    const storedConsent = readJSON<ConsentRecord>("consent");
     this._consent = storedConsent ?? defaultConsent();
 
-    const storedDoNotSell = readJSON<boolean>('do-not-sell') ?? false;
+    const storedDoNotSell = readJSON<boolean>("do-not-sell") ?? false;
     this._doNotSell = storedDoNotSell;
     this._committedDoNotSell = storedDoNotSell;
 
-    const storedRegime = readJSON<unknown>('consent-regime');
+    const storedRegime = readJSON<unknown>("consent-regime");
     this._regimeKnown = isConsentRegime(storedRegime);
     this._regime = this._regimeKnown
       ? (storedRegime as ConsentRegime)
-      : 'opt_in';
+      : "opt_in";
 
     this._analytics = this._consent?.analytics ?? false;
     this._advertising = this._consent?.advertising ?? false;
@@ -193,9 +194,9 @@ export class TemporalCookieBanner extends LitElement {
       }
       void (async () => {
         const { regime: currentRegime, gpc } = await this.fetchGeo();
-        sessionSet(this.GEO_RECONCILED_KEY, '1');
+        sessionSet(this.GEO_RECONCILED_KEY, "1");
 
-        const stored = readJSON<unknown>('consent-regime');
+        const stored = readJSON<unknown>("consent-regime");
         const previousRegime = isConsentRegime(stored) ? stored : null;
 
         if (shouldRepromptOnRegimeChange(previousRegime, currentRegime)) {
@@ -275,7 +276,7 @@ export class TemporalCookieBanner extends LitElement {
 
     // The Do-Not-Sell toggle is only an independent control in us_opt_out.
     // Elsewhere the sale/share signal is governed by the advertising choice.
-    const isOptOut = this._regime === 'us_opt_out';
+    const isOptOut = this._regime === "us_opt_out";
     const effectiveDoNotSell = isOptOut
       ? this._doNotSell
       : !categories.advertising;
@@ -369,7 +370,7 @@ export class TemporalCookieBanner extends LitElement {
     // query string already present on the endpoint.
     const geoUrl = new URL(this.geoEndpoint, window.location.origin);
     const search = new URLSearchParams(window.location.search);
-    for (const key of ['country', 'region', 'gpc']) {
+    for (const key of ["country", "region", "gpc"]) {
       const value = search.get(key);
       if (value) {
         geoUrl.searchParams.set(key, value);
@@ -393,8 +394,8 @@ export class TemporalCookieBanner extends LitElement {
         const data: unknown = await response.json();
         const record = (data ?? {}) as { regime?: unknown; gpc?: unknown };
         return {
-          regime: isConsentRegime(record.regime) ? record.regime : 'opt_in',
-          gpc: typeof record.gpc === 'boolean' ? record.gpc : false,
+          regime: isConsentRegime(record.regime) ? record.regime : "opt_in",
+          gpc: typeof record.gpc === "boolean" ? record.gpc : false,
         };
       }
     } catch {
@@ -402,7 +403,7 @@ export class TemporalCookieBanner extends LitElement {
     } finally {
       clearTimeout(timeoutId);
     }
-    return { regime: 'opt_in', gpc: false };
+    return { regime: "opt_in", gpc: false };
   }
 
   private applyRegimeFirstLoad(
@@ -414,10 +415,10 @@ export class TemporalCookieBanner extends LitElement {
     this._regimeKnown = true;
     this._geoResolved = true;
 
-    if (resolvedRegime === 'opt_in') {
+    if (resolvedRegime === "opt_in") {
       return;
     }
-    this.applyDefaultGrant(resolvedRegime !== 'us_opt_out', gpc);
+    this.applyDefaultGrant(resolvedRegime !== "us_opt_out", gpc);
   }
 
   private repromptForRegime(currentRegime: ConsentRegime, gpc: boolean): void {
@@ -430,7 +431,7 @@ export class TemporalCookieBanner extends LitElement {
     // cookie-adopt step can't re-adopt it and silently undo the re-prompt.
     clearConsentCookie();
 
-    if (currentRegime === 'opt_in') {
+    if (currentRegime === "opt_in") {
       // A prior silent grant / opt-out default can't count as GDPR opt-in.
       this._analytics = false;
       this._advertising = false;
@@ -488,11 +489,11 @@ export class TemporalCookieBanner extends LitElement {
       <button
         type="button"
         role="switch"
-        class="toggle ${checked ? 'active' : ''}"
-        aria-checked=${checked ? 'true' : 'false'}
+        class="toggle ${checked ? "active" : ""}"
+        aria-checked=${checked ? "true" : "false"}
         aria-label=${label}
         ?disabled=${disabled}
-        aria-disabled=${disabled ? 'true' : 'false'}
+        aria-disabled=${disabled ? "true" : "false"}
         @click=${disabled ? undefined : onToggle}
       >
         <span class="toggle-thumb"></span>
@@ -517,7 +518,7 @@ export class TemporalCookieBanner extends LitElement {
           </div>
           ${this.renderToggle(
             true,
-            'Strictly necessary cookies (always on)',
+            "Strictly necessary cookies (always on)",
             () => {},
             true,
           )}
@@ -532,7 +533,7 @@ export class TemporalCookieBanner extends LitElement {
           </div>
           ${this.renderToggle(
             this._analytics,
-            'Analytics and performance cookies',
+            "Analytics and performance cookies",
             () => (this._analytics = !this._analytics),
           )}
         </div>
@@ -546,7 +547,7 @@ export class TemporalCookieBanner extends LitElement {
           </div>
           ${this.renderToggle(
             this._advertising,
-            'Advertising and marketing cookies',
+            "Advertising and marketing cookies",
             () => (this._advertising = !this._advertising),
           )}
         </div>
@@ -563,11 +564,11 @@ export class TemporalCookieBanner extends LitElement {
   }
 
   private renderRegimeControls(): TemplateResult {
-    if (this._regime === 'opt_in') {
+    if (this._regime === "opt_in") {
       return html`
         <div class="regime-optin">
           <div
-            class="preferences-wrapper ${this._showPreferences ? 'open' : ''}"
+            class="preferences-wrapper ${this._showPreferences ? "open" : ""}"
             ?inert=${!this._showPreferences}
           >
             <div class="preferences-clip">${this.renderPreferences()}</div>
@@ -582,14 +583,14 @@ export class TemporalCookieBanner extends LitElement {
             <button
               type="button"
               class="btn"
-              aria-expanded=${this._showPreferences ? 'true' : 'false'}
+              aria-expanded=${this._showPreferences ? "true" : "false"}
               aria-controls="cookie-preferences-panel"
               @click=${() => this.togglePreferences()}
             >
               <span class="customize-label">
                 Customize
                 <svg
-                  class="chevron ${this._showPreferences ? 'expanded' : ''}"
+                  class="chevron ${this._showPreferences ? "expanded" : ""}"
                   viewBox="0 0 24 24"
                   width="28"
                   height="28"
@@ -609,7 +610,7 @@ export class TemporalCookieBanner extends LitElement {
       `;
     }
 
-    if (this._regime === 'us_opt_out') {
+    if (this._regime === "us_opt_out") {
       return html`
         <div class="do-not-sell">
           <span id="do-not-sell-label" class="do-not-sell-label">
@@ -617,7 +618,7 @@ export class TemporalCookieBanner extends LitElement {
           </span>
           ${this.renderToggle(
             this._doNotSell,
-            'Do not sell or share my personal information',
+            "Do not sell or share my personal information",
             () => (this._doNotSell = !this._doNotSell),
           )}
         </div>
@@ -630,8 +631,8 @@ export class TemporalCookieBanner extends LitElement {
 
   render(): typeof nothing | TemplateResult {
     const decided = this._consent?.decided ?? false;
-    const isOptIn = this._regime === 'opt_in';
-    const isOptOut = this._regime === 'us_opt_out';
+    const isOptIn = this._regime === "opt_in";
+    const isOptOut = this._regime === "us_opt_out";
     const showFirstLoad =
       this._mounted && this._geoResolved && (isOptIn || isOptOut) && !decided;
 
@@ -691,7 +692,7 @@ export class TemporalCookieBanner extends LitElement {
          temporal.io) are usable inside shadow DOM; the system stack is the
          self-contained fallback elsewhere. */
       --tcb-font-mono:
-        'Noto Sans Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+        "Noto Sans Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
       --tcb-offset: 1.25rem;
 
       position: fixed;
@@ -967,7 +968,7 @@ export class TemporalCookieBanner extends LitElement {
   `;
 }
 
-export const ELEMENT_NAME = 'temporal-cookie-banner';
+export const ELEMENT_NAME = "temporal-cookie-banner";
 
 // Register only in the browser: importing this module during SSR (e.g. from a
 // SvelteKit layout) must not touch `customElements`, which doesn't exist on the
@@ -975,7 +976,7 @@ export const ELEMENT_NAME = 'temporal-cookie-banner';
 // twice, or the ESM and IIFE builds could both be present on a page, and
 // re-defining a name throws.
 if (
-  typeof customElements !== 'undefined' &&
+  typeof customElements !== "undefined" &&
   !customElements.get(ELEMENT_NAME)
 ) {
   customElements.define(ELEMENT_NAME, TemporalCookieBanner);
@@ -983,6 +984,6 @@ if (
 
 declare global {
   interface HTMLElementTagNameMap {
-    'temporal-cookie-banner': TemporalCookieBanner;
+    "temporal-cookie-banner": TemporalCookieBanner;
   }
 }

@@ -1,7 +1,6 @@
 {
   "name": "@temporalio/cookie-banner",
   "version": "1.0.0",
-  "private": true,
   "description": "Framework-neutral cookie-consent banner web component and consent-regime API for *.temporal.io properties. Deployed at consent.temporal.io.",
   "type": "module",
   "main": "./src/index.ts",
@@ -20,6 +19,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/temporalio/consent.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "build": "vite build",
