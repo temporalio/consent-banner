@@ -1,6 +1,7 @@
 {
   "name": "@temporalio/cookie-banner",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.33.0",
   "description": "Framework-neutral cookie-consent banner web component and consent-regime API for *.temporal.io properties. Deployed at consent.temporal.io.",
   "type": "module",
   "main": "./src/index.ts",
