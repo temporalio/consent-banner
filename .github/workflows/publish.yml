@@ -7,9 +7,15 @@ name: Publish package
 # Before publishing: bump "version" in package.json, tag it (vX.Y.Z), and draft
 # a Release for that tag. npm refuses to republish an existing version, so the
 # version bump gates every publish.
+#
+# workflow_dispatch is a manual fallback (Actions tab -> Run workflow). Note that
+# release-triggered runs resolve the workflow from the RELEASE TAG's commit, so a
+# tag pushed before this file existed won't auto-run — dispatch it from a branch
+# that has the workflow instead.
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 # Least-privilege token: read the repo, write to GitHub Packages. The built-in
 # GITHUB_TOKEN is ephemeral and auto-scoped — no personal PAT is stored here.
