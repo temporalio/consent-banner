@@ -406,6 +406,34 @@ export class TemporalCookieBanner extends LitElement {
     return { regime: "opt_in", gpc: false };
   }
 
+  /** Force the strict opt_in default, clearing any prior grant (a silent grant
+   *  or an opt-out default) so nothing downstream treats it as GDPR opt-in. */
+  private resetForOptIn(): void {
+    this._analytics = false;
+    this._advertising = false;
+    this._doNotSell = false;
+    this._committedDoNotSell = false;
+    const next: ConsentRecord = {
+      decided: false,
+      necessary: true,
+      analytics: false,
+      advertising: false,
+    };
+    this._consent = next;
+    persistConsent(next);
+    persistDoNotSell(false);
+    pushConsentSignals({
+      analytics: false,
+      advertising: false,
+      doNotSell: false,
+    });
+    dispatchConsentChange({
+      consent: next,
+      doNotSell: false,
+      regime: "opt_in",
+    });
+  }
+
   private applyRegimeFirstLoad(
     resolvedRegime: ConsentRegime,
     gpc: boolean,
@@ -416,6 +444,13 @@ export class TemporalCookieBanner extends LitElement {
     this._geoResolved = true;
 
     if (resolvedRegime === "opt_in") {
+      // An opt-out default grant is the only way a still-undecided record carries
+      // a grant; it must not survive into opt_in. app.html's Consent Mode
+      // bootstrap and other consumers gate on record shape, so leaving it would
+      // grant analytics/ads without a GDPR opt-in.
+      if (this._consent?.analytics || this._consent?.advertising) {
+        this.resetForOptIn();
+      }
       return;
     }
     this.applyDefaultGrant(resolvedRegime !== "us_opt_out", gpc);
@@ -433,29 +468,7 @@ export class TemporalCookieBanner extends LitElement {
 
     if (currentRegime === "opt_in") {
       // A prior silent grant / opt-out default can't count as GDPR opt-in.
-      this._analytics = false;
-      this._advertising = false;
-      this._doNotSell = false;
-      this._committedDoNotSell = false;
-      const next: ConsentRecord = {
-        decided: false,
-        necessary: true,
-        analytics: false,
-        advertising: false,
-      };
-      this._consent = next;
-      persistConsent(next);
-      persistDoNotSell(false);
-      pushConsentSignals({
-        analytics: false,
-        advertising: false,
-        doNotSell: false,
-      });
-      dispatchConsentChange({
-        consent: next,
-        doNotSell: false,
-        regime: currentRegime,
-      });
+      this.resetForOptIn();
       return;
     }
 

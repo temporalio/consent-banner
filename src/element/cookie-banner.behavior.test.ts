@@ -196,3 +196,62 @@ describe("TemporalCookieBanner geo-endpoint", () => {
     expect(requested.pathname).toBe("/api/geo");
   });
 });
+
+// A us_opt_out visit persists an undecided default grant (analytics/advertising
+// true, decided false). If geo later resolves opt_in, that grant must not
+// survive — app.html's Consent Mode bootstrap and other consumers gate on the
+// record shape, so a lingering grant would fire analytics/ads without opt-in.
+describe("TemporalCookieBanner stale grant reconciliation", () => {
+  it("resets a us_opt_out default grant when geo later resolves opt_in", async () => {
+    localStorage.setItem(
+      "consent",
+      JSON.stringify({
+        decided: false,
+        necessary: true,
+        analytics: true,
+        advertising: true,
+      }),
+    );
+    localStorage.setItem("consent-regime", JSON.stringify("us_opt_out"));
+
+    const gtag = vi.fn();
+    (window as unknown as { gtag: unknown }).gtag = gtag;
+    (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+    const onConsentChange = vi.fn();
+    window.addEventListener(CONSENT_CHANGE_EVENT, onConsentChange);
+
+    mockGeo("opt_in");
+    await mount();
+
+    expect(readConsent()).toMatchObject({
+      decided: false,
+      analytics: false,
+      advertising: false,
+    });
+    expect(gtag).toHaveBeenCalledWith(
+      "consent",
+      "update",
+      expect.objectContaining({
+        analytics_storage: "denied",
+        ad_storage: "denied",
+      }),
+    );
+    expect(onConsentChange).toHaveBeenCalledOnce();
+
+    window.removeEventListener(CONSENT_CHANGE_EVENT, onConsentChange);
+  });
+
+  it("leaves a genuine opt_in first-load visitor untouched", async () => {
+    const onConsentChange = vi.fn();
+    window.addEventListener(CONSENT_CHANGE_EVENT, onConsentChange);
+
+    mockGeo("opt_in");
+    await mount();
+
+    // No prior grant: nothing is persisted and no reset event fires.
+    expect(readConsent()).toBeNull();
+    expect(onConsentChange).not.toHaveBeenCalled();
+
+    window.removeEventListener(CONSENT_CHANGE_EVENT, onConsentChange);
+  });
+});
