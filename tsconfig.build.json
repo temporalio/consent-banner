@@ -1,0 +1,14 @@
+{
+  // Emit build: compiles src/ to ESM JS + .d.ts in dist/ for the npm "." and
+  // "./core" entries (Lit stays external). The vite build adds the standalone
+  // IIFE/ESM CDN bundles afterward. Tests + the Vercel edge fn are excluded.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts"]
+}

@@ -2,6 +2,9 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   build: {
+    // tsc (tsconfig.build.json) emits the ESM + .d.ts into dist/ first; this
+    // vite pass adds the CDN/bundle files, so it must not wipe dist/.
+    emptyOutDir: false,
     lib: {
       entry: "src/index.ts",
       name: "TemporalConsentBanner",

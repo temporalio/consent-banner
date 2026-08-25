@@ -2,30 +2,55 @@
   "name": "@temporalio-web/consent-banner",
   "version": "1.0.0",
   "packageManager": "pnpm@10.33.0",
-  "description": "Framework-neutral cookie-consent banner web component and consent-regime API for *.temporal.io properties. Deployed at consent.temporal.io.",
+  "description": "Framework-neutral consent banner web component and consent-regime API for *.temporal.io properties. Deployed at consent.temporal.io.",
   "type": "module",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./core": "./src/core/index.ts",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "default": "./dist/core/index.js"
+    },
     "./bundle": "./dist/consent-banner.iife.js"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
-  "sideEffects": true,
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/element/*.js"
+  ],
+  "keywords": [
+    "consent",
+    "cookie-consent",
+    "gdpr",
+    "ccpa",
+    "consent-mode",
+    "web-component",
+    "lit",
+    "temporal"
+  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/temporalio/consent.git"
+    "url": "git+https://github.com/temporalio/consent-banner.git"
+  },
+  "homepage": "https://github.com/temporalio/consent-banner#readme",
+  "bugs": {
+    "url": "https://github.com/temporalio/consent-banner/issues"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build",
     "dev": "vite build --watch",
     "test": "vitest run",
     "test:watch": "vitest",
