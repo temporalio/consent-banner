@@ -1,5 +1,5 @@
 {
-  "name": "@temporalio/cookie-banner",
+  "name": "@temporalio-web/consent-banner",
   "version": "1.0.0",
   "packageManager": "pnpm@10.33.0",
   "description": "Framework-neutral cookie-consent banner web component and consent-regime API for *.temporal.io properties. Deployed at consent.temporal.io.",
@@ -10,7 +10,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./core": "./src/core/index.ts",
-    "./bundle": "./dist/cookie-banner.iife.js"
+    "./bundle": "./dist/consent-banner.iife.js"
   },
   "files": [
     "dist",

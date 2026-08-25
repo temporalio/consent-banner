@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 // Importing the element registers the custom element as a side effect.
-import { ELEMENT_NAME, type TemporalCookieBanner } from "./cookie-banner";
+import { ELEMENT_NAME, type TemporalConsentBanner } from "./consent-banner";
 import { CONSENT_CHANGE_EVENT } from "./consent-sync";
 import type { ConsentRecord } from "../core/consent";
 import type { ConsentRegime } from "../core/consent-region";
@@ -22,8 +22,8 @@ const mockGeo = (regime: ConsentRegime, gpc = false): void => {
 
 // Append the element and wait for the async geo resolution + the render it
 // schedules (two macrotasks drain the fetch().json() microtask chain).
-const mount = async (): Promise<TemporalCookieBanner> => {
-  const el = document.createElement(ELEMENT_NAME) as TemporalCookieBanner;
+const mount = async (): Promise<TemporalConsentBanner> => {
+  const el = document.createElement(ELEMENT_NAME) as TemporalConsentBanner;
   document.body.append(el);
   await tick();
   await tick();
@@ -31,11 +31,11 @@ const mount = async (): Promise<TemporalCookieBanner> => {
   return el;
 };
 
-const buttons = (el: TemporalCookieBanner): HTMLButtonElement[] =>
+const buttons = (el: TemporalConsentBanner): HTMLButtonElement[] =>
   Array.from(el.shadowRoot?.querySelectorAll("button") ?? []);
 
 const buttonByText = (
-  el: TemporalCookieBanner,
+  el: TemporalConsentBanner,
   text: string,
 ): HTMLButtonElement | undefined =>
   buttons(el).find((b) => b.textContent?.trim() === text);
@@ -66,7 +66,7 @@ afterEach(() => {
   delete (window as unknown as { dataLayer?: unknown }).dataLayer;
 });
 
-describe("TemporalCookieBanner rendering by regime", () => {
+describe("TemporalConsentBanner rendering by regime", () => {
   it("shows the opt_in notice with Accept All / Reject All / Customize", async () => {
     mockGeo("opt_in");
     const el = await mount();
@@ -107,7 +107,7 @@ describe("TemporalCookieBanner rendering by regime", () => {
 // Element-level integration guard: a real Accept click must drive ALL five
 // propagation channels. The module-level fan-out is covered in
 // consent-sync.test.ts; this proves the element is wired to it.
-describe("TemporalCookieBanner Accept fan-out", () => {
+describe("TemporalConsentBanner Accept fan-out", () => {
   it("writes localStorage + cookie + gtag + broadcast + consentchange", async () => {
     mockGeo("opt_in");
     const el = await mount();
@@ -156,7 +156,7 @@ describe("TemporalCookieBanner Accept fan-out", () => {
 // endpoint (consent.temporal.io/api/geo) so every embedding host resolves
 // consent from one source; a host with its own same-origin `/api/geo` route can
 // override via the `geo-endpoint` attribute.
-describe("TemporalCookieBanner geo-endpoint", () => {
+describe("TemporalConsentBanner geo-endpoint", () => {
   // Mock fetch capturing the requested URL while resolving a regime, so we can
   // assert which endpoint the element called.
   const captureGeoFetch = (): ReturnType<typeof vi.fn> => {
@@ -183,7 +183,7 @@ describe("TemporalCookieBanner geo-endpoint", () => {
 
   it("routes to a same-origin route set via the geo-endpoint attribute", async () => {
     const fetchMock = captureGeoFetch();
-    const el = document.createElement(ELEMENT_NAME) as TemporalCookieBanner;
+    const el = document.createElement(ELEMENT_NAME) as TemporalConsentBanner;
     el.setAttribute("geo-endpoint", "/api/geo");
     document.body.append(el);
     await tick();
@@ -201,7 +201,7 @@ describe("TemporalCookieBanner geo-endpoint", () => {
 // true, decided false). If geo later resolves opt_in, that grant must not
 // survive — app.html's Consent Mode bootstrap and other consumers gate on the
 // record shape, so a lingering grant would fire analytics/ads without opt-in.
-describe("TemporalCookieBanner stale grant reconciliation", () => {
+describe("TemporalConsentBanner stale grant reconciliation", () => {
   it("resets a us_opt_out default grant when geo later resolves opt_in", async () => {
     localStorage.setItem(
       "consent",

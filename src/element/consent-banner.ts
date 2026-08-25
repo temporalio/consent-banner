@@ -22,7 +22,7 @@ import {
 /** Global event a host can dispatch on `window` to (re)open the notice, e.g. a
  *  footer "Cookie preferences" link. Framework-neutral alternative to holding a
  *  reference and calling `.open()`. */
-export const OPEN_EVENT = "temporal:cookie-banner-open";
+export const OPEN_EVENT = "temporal:consent-banner-open";
 
 /** Best-effort JSON read from localStorage (mirrors persistStore's format).
  *  Never throws — private mode / quota / corrupt value all yield null. */
@@ -53,7 +53,7 @@ const sessionSet = (key: string, value: string): void => {
 };
 
 /**
- * `<temporal-cookie-banner>`
+ * `<temporal-consent-banner>`
  *
  * Framework-neutral consent notice for temporal.io properties (originally the
  * SvelteKit app's cookie modal, since removed in favor of this element).
@@ -68,7 +68,7 @@ const sessionSet = (key: string, value: string): void => {
  * Styling is scoped to this shadow root; theme per-property via the `--tcb-*`
  * custom properties declared on `:host`.
  */
-export class TemporalCookieBanner extends LitElement {
+export class TemporalConsentBanner extends LitElement {
   static properties = {
     _mounted: { state: true },
     _showPreferences: { state: true },
@@ -981,7 +981,7 @@ export class TemporalCookieBanner extends LitElement {
   `;
 }
 
-export const ELEMENT_NAME = "temporal-cookie-banner";
+export const ELEMENT_NAME = "temporal-consent-banner";
 
 // Register only in the browser: importing this module during SSR (e.g. from a
 // SvelteKit layout) must not touch `customElements`, which doesn't exist on the
@@ -992,11 +992,11 @@ if (
   typeof customElements !== "undefined" &&
   !customElements.get(ELEMENT_NAME)
 ) {
-  customElements.define(ELEMENT_NAME, TemporalCookieBanner);
+  customElements.define(ELEMENT_NAME, TemporalConsentBanner);
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "temporal-cookie-banner": TemporalCookieBanner;
+    "temporal-consent-banner": TemporalConsentBanner;
   }
 }

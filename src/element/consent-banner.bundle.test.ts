@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 //
 // Resolve from the package root (vitest's cwd) rather than `import.meta.url`:
 // under the jsdom environment `import.meta.url` is an http URL, not file://.
-const bundlePath = resolve(process.cwd(), 'dist/cookie-banner.iife.js');
+const bundlePath = resolve(process.cwd(), 'dist/consent-banner.iife.js');
 const bundleExists = existsSync(bundlePath);
 
 describe.skipIf(!bundleExists)('IIFE bundle (script-tag distribution)', () => {
@@ -19,9 +19,9 @@ describe.skipIf(!bundleExists)('IIFE bundle (script-tag distribution)', () => {
     // only care about its side effect (customElements.define).
     new Function(code)();
 
-    expect(customElements.get('temporal-cookie-banner')).toBeDefined();
+    expect(customElements.get('temporal-consent-banner')).toBeDefined();
 
-    const el = document.createElement('temporal-cookie-banner');
+    const el = document.createElement('temporal-consent-banner');
     document.body.append(el);
     await (el as unknown as { updateComplete: Promise<unknown> })
       .updateComplete;

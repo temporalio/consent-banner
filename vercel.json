@@ -12,12 +12,12 @@
   ],
   "rewrites": [
     {
-      "source": "/v1/cookie-banner.js",
-      "destination": "/cookie-banner.iife.js"
+      "source": "/v1/consent-banner.js",
+      "destination": "/consent-banner.iife.js"
     },
     {
-      "source": "/v1/cookie-banner.esm.js",
-      "destination": "/cookie-banner.es.js"
+      "source": "/v1/consent-banner.esm.js",
+      "destination": "/consent-banner.es.js"
     }
   ],
   "headers": [
