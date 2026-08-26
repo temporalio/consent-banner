@@ -37,16 +37,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the tagged commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Set up Node.js for the public npm registry
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24
           # No dependency cache: npm advises against caching in release builds.
+          # setup-node@v5 auto-caches when package.json has a packageManager
+          # field, so disable it explicitly to keep release builds cache-free.
+          package-manager-cache: false
           registry-url: https://registry.npmjs.org
 
       # Trusted publishing needs npm CLI >= 11.5.1; Node's bundled npm may be older.

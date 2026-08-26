@@ -10,13 +10,13 @@ export {
   TemporalConsentBanner,
   ELEMENT_NAME,
   OPEN_EVENT,
-} from './element/consent-banner';
+} from "./element/consent-banner.js";
 export {
   CONSENT_CHANGE_EVENT,
   type ConsentChangeDetail,
-} from './element/consent-sync';
+} from "./element/consent-sync.js";
 
 // Framework-neutral consent core, shared with consumers so every property reads
 // and writes consent through the same types and cookie/regime logic.
-export * from './core/consent';
-export * from './core/consent-region';
+export * from "./core/consent.js";
+export * from "./core/consent-region.js";

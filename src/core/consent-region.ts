@@ -1,4 +1,4 @@
-import type { CountryCode } from './countries';
+import type { CountryCode } from "./countries.js";
 
 /**
  * Countries where GDPR (or the materially equivalent UK GDPR) applies and a
@@ -10,39 +10,39 @@ import type { CountryCode } from './countries';
  */
 const GDPR_COUNTRIES = [
   // EU-27
-  'AT',
-  'BE',
-  'BG',
-  'HR',
-  'CY',
-  'CZ',
-  'DK',
-  'EE',
-  'FI',
-  'FR',
-  'DE',
-  'GR',
-  'HU',
-  'IE',
-  'IT',
-  'LV',
-  'LT',
-  'LU',
-  'MT',
-  'NL',
-  'PL',
-  'PT',
-  'RO',
-  'SK',
-  'SI',
-  'ES',
-  'SE',
+  "AT",
+  "BE",
+  "BG",
+  "HR",
+  "CY",
+  "CZ",
+  "DK",
+  "EE",
+  "FI",
+  "FR",
+  "DE",
+  "GR",
+  "HU",
+  "IE",
+  "IT",
+  "LV",
+  "LT",
+  "LU",
+  "MT",
+  "NL",
+  "PL",
+  "PT",
+  "RO",
+  "SK",
+  "SI",
+  "ES",
+  "SE",
   // EEA (non-EU)
-  'IS',
-  'LI',
-  'NO',
+  "IS",
+  "LI",
+  "NO",
   // UK
-  'GB',
+  "GB",
 ] as const satisfies readonly CountryCode[];
 
 const GDPR_COUNTRY_SET: ReadonlySet<string> = new Set(GDPR_COUNTRIES);
@@ -71,9 +71,9 @@ export const isGdprCountry = (code: string | null | undefined): boolean => {
  * with legal as these laws evolve.
  */
 const ADDITIONAL_OPT_IN_COUNTRIES = [
-  'BR',
-  'CH',
-  'CA',
+  "BR",
+  "CH",
+  "CA",
 ] as const satisfies readonly CountryCode[];
 
 const OPT_IN_COUNTRY_SET: ReadonlySet<string> = new Set([
@@ -105,25 +105,25 @@ export const isOptInCountry = (code: string | null | undefined): boolean => {
  * state laws take effect — review periodically with legal.
  */
 const US_OPT_OUT_STATES: ReadonlySet<string> = new Set([
-  'CA', // California (CCPA/CPRA)
-  'VA', // Virginia (VCDPA)
-  'CO', // Colorado (CPA)
-  'CT', // Connecticut (CTDPA)
-  'UT', // Utah (UCPA)
-  'TX', // Texas (TDPSA)
-  'OR', // Oregon (OCPA)
-  'MT', // Montana (MCDPA)
-  'IA', // Iowa (ICDPA)
-  'DE', // Delaware (DPDPA)
-  'NJ', // New Jersey (NJDPA)
-  'NH', // New Hampshire (NHPA)
-  'NE', // Nebraska (NDPA)
-  'MD', // Maryland (MODPA)
-  'MN', // Minnesota (MCDPA)
-  'TN', // Tennessee (TIPA)
-  'IN', // Indiana (INCDPA)
-  'KY', // Kentucky (KCDPA)
-  'RI', // Rhode Island (RIDTPPA)
+  "CA", // California (CCPA/CPRA)
+  "VA", // Virginia (VCDPA)
+  "CO", // Colorado (CPA)
+  "CT", // Connecticut (CTDPA)
+  "UT", // Utah (UCPA)
+  "TX", // Texas (TDPSA)
+  "OR", // Oregon (OCPA)
+  "MT", // Montana (MCDPA)
+  "IA", // Iowa (ICDPA)
+  "DE", // Delaware (DPDPA)
+  "NJ", // New Jersey (NJDPA)
+  "NH", // New Hampshire (NHPA)
+  "NE", // Nebraska (NDPA)
+  "MD", // Maryland (MODPA)
+  "MN", // Minnesota (MCDPA)
+  "TN", // Tennessee (TIPA)
+  "IN", // Indiana (INCDPA)
+  "KY", // Kentucky (KCDPA)
+  "RI", // Rhode Island (RIDTPPA)
 ]);
 
 /**
@@ -136,7 +136,7 @@ const US_OPT_OUT_STATES: ReadonlySet<string> = new Set([
  * - `us_basic`   — other US states: simple notice with Accept/Decline.
  * - `row`        — everywhere else: same simple notice as `us_basic`.
  */
-export type ConsentRegime = 'opt_in' | 'us_opt_out' | 'us_basic' | 'row';
+export type ConsentRegime = "opt_in" | "us_opt_out" | "us_basic" | "row";
 
 /**
  * Runtime guard for `ConsentRegime`. Use when parsing values that TypeScript
@@ -145,10 +145,10 @@ export type ConsentRegime = 'opt_in' | 'us_opt_out' | 'us_basic' | 'row';
  * `opt_in` (strictest) when this returns false.
  */
 export const isConsentRegime = (value: unknown): value is ConsentRegime =>
-  value === 'opt_in' ||
-  value === 'us_opt_out' ||
-  value === 'us_basic' ||
-  value === 'row';
+  value === "opt_in" ||
+  value === "us_opt_out" ||
+  value === "us_basic" ||
+  value === "row";
 
 /**
  * Resolve a visitor's consent regime from their country and (for the US) region.
@@ -162,23 +162,23 @@ export const resolveConsentRegime = (
   region: string | null | undefined,
 ): ConsentRegime => {
   if (!country) {
-    return 'opt_in';
+    return "opt_in";
   }
 
   const countryCode = country.toUpperCase();
 
   if (isOptInCountry(countryCode)) {
-    return 'opt_in';
+    return "opt_in";
   }
 
-  if (countryCode === 'US') {
+  if (countryCode === "US") {
     const stateCode = region?.toUpperCase();
     return stateCode && US_OPT_OUT_STATES.has(stateCode)
-      ? 'us_opt_out'
-      : 'us_basic';
+      ? "us_opt_out"
+      : "us_basic";
   }
 
-  return 'row';
+  return "row";
 };
 
 /**

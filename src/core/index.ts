@@ -7,6 +7,6 @@
  * importing this entry is safe from server code, form modules, and any consumer
  * that only needs the shared consent logic.
  */
-export * from './consent';
-export * from './consent-region';
-export * from './countries';
+export * from "./consent.js";
+export * from "./consent-region.js";
+export * from "./countries.js";

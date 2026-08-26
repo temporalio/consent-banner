@@ -1,5 +1,5 @@
-import { writeConsentCookie, type ConsentRecord } from '../core/consent';
-import type { ConsentRegime } from '../core/consent-region';
+import { writeConsentCookie, type ConsentRecord } from "../core/consent.js";
+import type { ConsentRegime } from "../core/consent-region.js";
 
 /**
  * Consent-change fan-out.
@@ -72,13 +72,13 @@ export const persistShared = <T>(key: string, value: T): void => {
 };
 
 export const persistConsent = (record: ConsentRecord): void =>
-  persistShared('consent', record);
+  persistShared("consent", record);
 
 export const persistDoNotSell = (doNotSell: boolean): void =>
-  persistShared('do-not-sell', doNotSell);
+  persistShared("do-not-sell", doNotSell);
 
 export const persistRegime = (regime: ConsentRegime): void =>
-  persistShared('consent-regime', regime);
+  persistShared("consent-regime", regime);
 
 /**
  * Push Google Consent Mode signals (and the `consent_granted` event) for a
@@ -92,11 +92,11 @@ export const pushConsentSignals = (record: {
   doNotSell: boolean;
 }): void => {
   const w = window as WindowWithDataLayer;
-  const analyticsState = record.analytics ? 'granted' : 'denied';
+  const analyticsState = record.analytics ? "granted" : "denied";
   const adState =
-    record.advertising && !record.doNotSell ? 'granted' : 'denied';
+    record.advertising && !record.doNotSell ? "granted" : "denied";
 
-  w.gtag?.('consent', 'update', {
+  w.gtag?.("consent", "update", {
     analytics_storage: analyticsState,
     ad_storage: adState,
     ad_user_data: adState,
@@ -104,11 +104,11 @@ export const pushConsentSignals = (record: {
   });
 
   if (record.analytics) {
-    (w.dataLayer ??= []).push({ event: 'consent_granted' });
+    (w.dataLayer ??= []).push({ event: "consent_granted" });
   }
 };
 
-export const CONSENT_CHANGE_EVENT = 'temporal:consentchange';
+export const CONSENT_CHANGE_EVENT = "temporal:consentchange";
 
 export type ConsentChangeDetail = {
   consent: ConsentRecord;

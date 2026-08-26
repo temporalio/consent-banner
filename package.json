@@ -1,6 +1,6 @@
 {
   "name": "@temporalio-web/consent-banner",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "packageManager": "pnpm@10.33.0",
   "description": "Framework-neutral consent banner web component and consent-regime API for *.temporal.io properties. Deployed at consent.temporal.io.",
   "type": "module",

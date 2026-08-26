@@ -5,19 +5,19 @@ import {
   readConsentFromDocumentCookie,
   writeConsentCookie,
   type ConsentRecord,
-} from "../core/consent";
+} from "../core/consent.js";
 import {
   isConsentRegime,
   shouldRepromptOnRegimeChange,
   type ConsentRegime,
-} from "../core/consent-region";
+} from "../core/consent-region.js";
 import {
   dispatchConsentChange,
   persistConsent,
   persistDoNotSell,
   persistRegime,
   pushConsentSignals,
-} from "./consent-sync";
+} from "./consent-sync.js";
 
 /** Global event a host can dispatch on `window` to (re)open the notice, e.g. a
  *  footer "Cookie preferences" link. Framework-neutral alternative to holding a
