@@ -45,11 +45,11 @@ jobs:
       - name: Set up Node.js for the public npm registry
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: pnpm
+          node-version: 24
+          # No dependency cache: npm advises against caching in release builds.
           registry-url: https://registry.npmjs.org
 
-      # Trusted publishing needs npm CLI >= 11.5.1; Node 22's bundled npm is older.
+      # Trusted publishing needs npm CLI >= 11.5.1; Node's bundled npm may be older.
       - name: Ensure an OIDC-capable npm CLI
         run: npm install -g npm@latest
 
