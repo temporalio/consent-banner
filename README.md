@@ -11,11 +11,11 @@ plus a self-contained bundle for drop-in `<script>` usage.
 
 ## What's in the box
 
-| Thing | Where | Purpose |
-| --- | --- | --- |
-| `<temporal-consent-banner>` | `src/element/` | The custom element (UI + wiring). |
-| Consent core | `src/core/` | Framework-free regime logic, storage, and Consent Mode — no DOM, no Lit. |
-| IIFE bundle | build output | Self-contained artifact for CDN `<script src>` usage. |
+| Thing                       | Where          | Purpose                                                                  |
+| --------------------------- | -------------- | ------------------------------------------------------------------------ |
+| `<temporal-consent-banner>` | `src/element/` | The custom element (UI + wiring).                                        |
+| Consent core                | `src/core/`    | Framework-free regime logic, storage, and Consent Mode — no DOM, no Lit. |
+| IIFE bundle                 | build output   | Self-contained artifact for CDN `<script src>` usage.                    |
 
 ## Using it
 
@@ -59,27 +59,27 @@ client in SSR frameworks. The `./core` entry is DOM-free and safe on the server.
 
 ## Package entry points
 
-| Import | Contents | Side effects |
-| --- | --- | --- |
-| `@temporalio-web/consent-banner` | `TemporalConsentBanner` element + core exports | Registers `<temporal-consent-banner>` |
-| `@temporalio-web/consent-banner/core` | Regime logic, storage, Consent Mode | None (safe on the server) |
-| `@temporalio-web/consent-banner/bundle` | Prebuilt IIFE (Lit bundled) | Registers the element |
+| Import                                  | Contents                                       | Side effects                          |
+| --------------------------------------- | ---------------------------------------------- | ------------------------------------- |
+| `@temporalio-web/consent-banner`        | `TemporalConsentBanner` element + core exports | Registers `<temporal-consent-banner>` |
+| `@temporalio-web/consent-banner/core`   | Regime logic, storage, Consent Mode            | None (safe on the server)             |
+| `@temporalio-web/consent-banner/bundle` | Prebuilt IIFE (Lit bundled)                    | Registers the element                 |
 
 ## Hosted endpoints
 
-| Endpoint | Serves |
-| --- | --- |
-| `GET /v1/consent-banner.js` | IIFE bundle (`consent-banner.iife.js`) |
-| `GET /v1/consent-banner.esm.js` | ESM bundle (`consent-banner.es.js`) |
+| Endpoint                        | Serves                                 |
+| ------------------------------- | -------------------------------------- |
+| `GET /v1/consent-banner.js`     | IIFE bundle (`consent-banner.iife.js`) |
+| `GET /v1/consent-banner.esm.js` | ESM bundle (`consent-banner.es.js`)    |
 
 Rewrites live in `vercel.json`. The `/v1/` prefix is the stable public contract;
 build output filenames are always `consent-banner.{es,iife}.js`.
 
 ## Events
 
-| Event | Direction | Meaning |
-| --- | --- | --- |
-| `temporal:consent-banner-open` | in | Dispatch on `window` to reopen the banner (e.g. a "Cookie preferences" link). |
+| Event                          | Direction | Meaning                                                                       |
+| ------------------------------ | --------- | ----------------------------------------------------------------------------- |
+| `temporal:consent-banner-open` | in        | Dispatch on `window` to reopen the banner (e.g. a "Cookie preferences" link). |
 
 ## Local development
 
