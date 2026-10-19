@@ -104,6 +104,41 @@ describe('pushConsentSignals', () => {
       }),
     ).not.toThrow();
   });
+
+  it('updates Consent Mode but omits the event when emitGrantedEvent is false', () => {
+    const gtag = vi.fn();
+    (window as unknown as { gtag: unknown }).gtag = gtag;
+    (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+
+    pushConsentSignals(
+      { analytics: true, advertising: true, doNotSell: false },
+      { emitGrantedEvent: false },
+    );
+
+    expect(gtag).toHaveBeenCalledWith('consent', 'update', {
+      analytics_storage: 'granted',
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'granted',
+    });
+    expect(
+      (window as unknown as { dataLayer: unknown[] }).dataLayer,
+    ).toHaveLength(0);
+  });
+
+  it('emits the event when emitGrantedEvent is true and analytics is granted', () => {
+    (window as unknown as { gtag: unknown }).gtag = vi.fn();
+    (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+
+    pushConsentSignals(
+      { analytics: true, advertising: true, doNotSell: false },
+      { emitGrantedEvent: true },
+    );
+
+    expect(
+      (window as unknown as { dataLayer: unknown[] }).dataLayer,
+    ).toContainEqual({ event: 'consent_granted' });
+  });
 });
 
 describe('dispatchConsentChange', () => {

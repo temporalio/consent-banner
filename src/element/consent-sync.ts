@@ -81,16 +81,31 @@ export const persistRegime = (regime: ConsentRegime): void =>
   persistShared("consent-regime", regime);
 
 /**
- * Push Google Consent Mode signals (and the `consent_granted` event) for a
- * consent state. Advertising is only granted when the visitor allowed it AND has
- * not opted out of sale/share. `gtag`/`dataLayer` are optional: on foreign hosts
- * (docs / pages) they may be absent, and that's fine.
+ * Push Google Consent Mode signals (and, on an actual change, the
+ * `consent_granted` event) for a consent state. Advertising is only granted when
+ * the visitor allowed it AND has not opted out of sale/share. `gtag`/`dataLayer`
+ * are optional: on foreign hosts (docs / pages) they may be absent, and that's
+ * fine.
+ *
+ * The two outputs have different idempotency: the `gtag('consent','update', …)`
+ * signal is idempotent and MUST run on every call so Consent Mode reflects the
+ * current state before GTM processes. The `consent_granted` dataLayer event is
+ * NOT idempotent — each push is a fresh GTM trigger, so re-pushing it when
+ * nothing changed double-fires every tag listening on it. `us_opt_out` persists
+ * an undecided default grant and re-applies it on every load, so without this
+ * gate it would re-emit `consent_granted` on each page view and double-count the
+ * consent-gated suite. Callers pass `emitGrantedEvent: false` when the committed
+ * consent state did not change on this call; the default stays `true` so a
+ * genuine grant/transition still emits.
  */
-export const pushConsentSignals = (record: {
-  analytics: boolean;
-  advertising: boolean;
-  doNotSell: boolean;
-}): void => {
+export const pushConsentSignals = (
+  record: {
+    analytics: boolean;
+    advertising: boolean;
+    doNotSell: boolean;
+  },
+  options: { emitGrantedEvent?: boolean } = {},
+): void => {
   const w = window as WindowWithDataLayer;
   const analyticsState = record.analytics ? "granted" : "denied";
   const adState =
@@ -103,7 +118,7 @@ export const pushConsentSignals = (record: {
     ad_personalization: adState,
   });
 
-  if (record.analytics) {
+  if (record.analytics && options.emitGrantedEvent !== false) {
     (w.dataLayer ??= []).push({ event: "consent_granted" });
   }
 };

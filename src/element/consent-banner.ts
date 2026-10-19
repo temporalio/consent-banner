@@ -289,6 +289,14 @@ export class TemporalConsentBanner extends LitElement {
       previous.advertising !== next.advertising ||
       this._committedDoNotSell !== effectiveDoNotSell;
 
+    // The `consent_granted` event must fire only when analytics consent actually
+    // transitions to granted — NOT on every committed change. `didChange` (which
+    // drives host invalidation below) is true even when only `decided` flips
+    // (e.g. a us_opt_out visitor clicking Accept on an already default-granted
+    // notice), which would needlessly re-fire the consent-gated tags on that same
+    // page. Gate the event on the grant transition instead.
+    const analyticsNewlyGranted = next.analytics && previous?.analytics !== true;
+
     this._consent = next;
     persistConsent(next);
     this._committedDoNotSell = effectiveDoNotSell;
@@ -299,11 +307,14 @@ export class TemporalConsentBanner extends LitElement {
     this._showPreferences = false;
 
     writeConsentCookie(next);
-    pushConsentSignals({
-      analytics: next.analytics,
-      advertising: next.advertising,
-      doNotSell: effectiveDoNotSell,
-    });
+    pushConsentSignals(
+      {
+        analytics: next.analytics,
+        advertising: next.advertising,
+        doNotSell: effectiveDoNotSell,
+      },
+      { emitGrantedEvent: analyticsNewlyGranted },
+    );
 
     // Re-run consent-dependent host work (e.g. experiment assignment) without a
     // full reload that would overwrite document.referrer with a self-referral.
@@ -320,6 +331,13 @@ export class TemporalConsentBanner extends LitElement {
    *  GPC. us_opt_out stays undecided (its notice shows once); us_basic/row are
    *  granted silently. */
   private applyDefaultGrant(markDecided: boolean, gpc: boolean): void {
+    // Capture the prior committed state BEFORE the mutations below so we can tell
+    // a genuine first-load grant from a no-op re-apply. us_opt_out stays
+    // `decided: false`, so `initialize()` re-runs this on every page load; without
+    // this guard each load would re-emit `consent_granted` and double-count the
+    // consent-gated suite from the second page view on.
+    const previous = this._consent;
+
     this._doNotSell = gpc;
     this._committedDoNotSell = gpc;
     this._analytics = true;
@@ -335,7 +353,14 @@ export class TemporalConsentBanner extends LitElement {
     persistConsent(next);
     persistDoNotSell(gpc);
 
-    pushConsentSignals({ analytics: true, advertising: true, doNotSell: gpc });
+    // Emit the event only when analytics consent actually transitions to granted
+    // (first grant), not on a repeat re-apply where it was already granted.
+    const analyticsNewlyGranted = previous?.analytics !== true;
+
+    pushConsentSignals(
+      { analytics: true, advertising: true, doNotSell: gpc },
+      { emitGrantedEvent: analyticsNewlyGranted },
+    );
 
     // Only the decided path (us_basic/row) writes the SSR cookie and re-runs
     // host loads; us_opt_out stays undecided with no cookie.
