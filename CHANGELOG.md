@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.2]
+
+### Fixed
+
+- Emit the `consent_granted` dataLayer event only when analytics consent actually
+  transitions to granted, instead of on every consent re-apply. The Google
+  Consent Mode update is idempotent and still runs on every call, but the
+  non-idempotent `consent_granted` event was re-pushed whenever the default grant
+  was re-applied or a decision was re-affirmed, causing GTM to double-fire every
+  consent-gated tag. The most visible case was `us_opt_out` visitors — whose
+  undecided default grant is re-applied on every page load — double-counting page
+  views from the second view on (surfaced by Reo.dev); the same gate also covers
+  re-affirmations in other regimes (e.g. accepting an already-granted notice).
+
 ## [1.0.0]
 
 Initial public release on npm as `@temporalio-web/consent-banner`, published with
@@ -25,5 +39,6 @@ are otherwise unchanged.
 - Consent-regime resolution (`opt_in` / `us_opt_out` / `us_basic` / `row`), GPC
   handling, and Google Consent Mode signal fan-out.
 
-[Unreleased]: https://github.com/temporalio/consent-banner/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/temporalio/consent-banner/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/temporalio/consent-banner/compare/v1.0.0...v1.0.2
 [1.0.0]: https://github.com/temporalio/consent-banner/releases/tag/v1.0.0

@@ -255,3 +255,94 @@ describe("TemporalConsentBanner stale grant reconciliation", () => {
     window.removeEventListener(CONSENT_CHANGE_EVENT, onConsentChange);
   });
 });
+
+// Regression guard for the double-counted `consent_granted`. us_opt_out persists
+// an undecided default grant and re-applies it on EVERY page load, so each load
+// re-ran the default-grant path. The Consent Mode update is idempotent and must
+// still run, but re-emitting the `consent_granted` dataLayer event made GTM
+// double-fire every consent-gated tag from the second page view on (surfaced by
+// Reo.dev counting page views twice). The event must fire only on a genuine
+// grant, not on a no-op re-apply.
+describe("TemporalConsentBanner consent_granted de-duplication", () => {
+  const dataLayer = (): Record<string, unknown>[] =>
+    (window as unknown as { dataLayer: Record<string, unknown>[] }).dataLayer;
+
+  const grantedEvents = (): Record<string, unknown>[] =>
+    dataLayer().filter((entry) => entry.event === "consent_granted");
+
+  it("emits consent_granted once on a first-time us_opt_out visit", async () => {
+    const gtag = vi.fn();
+    (window as unknown as { gtag: unknown }).gtag = gtag;
+    (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+
+    mockGeo("us_opt_out");
+    await mount();
+
+    // Genuine transition from no prior grant → analytics granted.
+    expect(grantedEvents()).toHaveLength(1);
+  });
+
+  it("does not re-emit consent_granted when us_opt_out re-applies its stored grant", async () => {
+    // Simulate a returning us_opt_out visitor: a prior load already persisted the
+    // undecided default grant, and the regime is known.
+    localStorage.setItem(
+      "consent",
+      JSON.stringify({
+        decided: false,
+        necessary: true,
+        analytics: true,
+        advertising: true,
+      }),
+    );
+    localStorage.setItem("consent-regime", JSON.stringify("us_opt_out"));
+
+    const gtag = vi.fn();
+    (window as unknown as { gtag: unknown }).gtag = gtag;
+    (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+
+    mockGeo("us_opt_out");
+    await mount();
+
+    // Consent Mode must still be refreshed (idempotent)...
+    expect(gtag).toHaveBeenCalledWith(
+      "consent",
+      "update",
+      expect.objectContaining({
+        analytics_storage: "granted",
+        ad_storage: "granted",
+      }),
+    );
+    // ...but the non-idempotent event must NOT re-fire, since nothing changed.
+    expect(grantedEvents()).toHaveLength(0);
+  });
+
+  it("emits consent_granted only once when a us_opt_out visitor accepts an already-granted notice", async () => {
+    (window as unknown as { gtag: unknown }).gtag = vi.fn();
+    (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+
+    mockGeo("us_opt_out");
+    const el = await mount();
+
+    // Load emits once (first grant). Clicking Accept only flips `decided`; analytics
+    // was already granted, so it must NOT re-fire the consent-gated tags.
+    buttonByText(el, "Accept")?.click();
+    await el.updateComplete;
+
+    expect(grantedEvents()).toHaveLength(1);
+  });
+
+  it("emits consent_granted once when an opt_in visitor accepts", async () => {
+    (window as unknown as { gtag: unknown }).gtag = vi.fn();
+    (window as unknown as { dataLayer: unknown[] }).dataLayer = [];
+
+    mockGeo("opt_in");
+    const el = await mount();
+
+    // opt_in grants nothing on load (notice shown); the single grant is the click.
+    expect(grantedEvents()).toHaveLength(0);
+    buttonByText(el, "Accept All")?.click();
+    await el.updateComplete;
+
+    expect(grantedEvents()).toHaveLength(1);
+  });
+});
