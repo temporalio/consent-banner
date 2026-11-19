@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.3]
+
+### Fixed
+
+- Give the consent-banner action buttons uniform padding and height on mobile.
+  The equal-width rule applied `flex: 1 1 0` in the narrow single-column layout,
+  where `flex-basis: 0` falls on the vertical axis and collapsed each button's
+  height, making Accept / Reject / Customize shorter than Save Preferences. The
+  rule is now scoped to the horizontal (≥640px) row layout.
+
 ## [1.0.2]
 
 ### Fixed
@@ -39,6 +49,7 @@ are otherwise unchanged.
 - Consent-regime resolution (`opt_in` / `us_opt_out` / `us_basic` / `row`), GPC
   handling, and Google Consent Mode signal fan-out.
 
-[Unreleased]: https://github.com/temporalio/consent-banner/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/temporalio/consent-banner/compare/v1.0.3...HEAD
+[1.0.3]: https://github.com/temporalio/consent-banner/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/temporalio/consent-banner/compare/v1.0.0...v1.0.2
 [1.0.0]: https://github.com/temporalio/consent-banner/releases/tag/v1.0.0
