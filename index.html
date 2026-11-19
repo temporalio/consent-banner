@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Consent banner — dev demo</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, sans-serif;
+        background: #f4f4f5;
+        color: #18181b;
+      }
+      main {
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+      code {
+        background: #e4e4e7;
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+      }
+      button.reset {
+        margin-top: 1rem;
+        padding: 0.5rem 0.9rem;
+        border: 1px solid #a1a1aa;
+        border-radius: 6px;
+        background: #fff;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Consent banner dev demo</h1>
+      <p>
+        The banner renders below. Narrow the viewport under <code>640px</code>
+        (or use the browser device toolbar) to check the mobile button layout.
+        All action buttons should share the same height and padding.
+      </p>
+      <p>
+        The <code>/api/geo</code> endpoint is stubbed by the dev server and
+        resolves the regime from query params (the element forwards
+        <code>country</code>, <code>region</code>, and <code>gpc</code>), just
+        like the real endpoint in non-production. With no params it falls back
+        to the strict <code>opt_in</code> regime.
+      </p>
+      <ul>
+        <li><a href="/">no params</a>: <code>opt_in</code> (GDPR-style)</li>
+        <li>
+          <a href="/?country=US&amp;region=CA">?country=US&amp;region=CA</a>:
+          <code>us_opt_out</code> (Do not sell)
+        </li>
+        <li>
+          <a href="/?country=US&amp;region=NY">?country=US&amp;region=NY</a>:
+          <code>us_basic</code>
+        </li>
+        <li>
+          <a href="/?country=US&amp;region=CA&amp;gpc=1"
+            >?country=US&amp;region=CA&amp;gpc=1</a
+          >: <code>us_opt_out</code> with GPC
+        </li>
+      </ul>
+      <p>
+        To change regime, click
+        <strong>Clear stored consent &amp; reload</strong> first. A prior
+        decision is persisted in <code>localStorage</code> <em>and</em> a
+        <code>consent</code> cookie, either of which suppresses the banner on
+        reload.
+      </p>
+      <button
+        class="reset"
+        type="button"
+        onclick="
+          localStorage.clear();
+          sessionStorage.clear();
+          document.cookie = 'consent=; path=/; max-age=0; SameSite=Lax';
+          location.reload();
+        "
+      >
+        Clear stored consent &amp; reload
+      </button>
+    </main>
+
+    <temporal-consent-banner geo-endpoint="/api/geo"></temporal-consent-banner>
+
+    <script type="module">
+      import "/src/index.ts";
+    </script>
+  </body>
+</html>

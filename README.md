@@ -26,18 +26,18 @@ plus a self-contained bundle for drop-in `<script>` usage.
 <temporal-consent-banner></temporal-consent-banner>
 ```
 
-The IIFE bundle registers the element and includes Lit — no build step required.
+The IIFE bundle registers the element and includes Lit. There is no build step required.
 
 ### As an npm dependency (bundler / framework)
 
-This package is published to the **public npm registry** — no auth or `.npmrc`
+This package is published to the **public npm registry**. No auth or `.npmrc`
 scope config is required.
 
 ```sh
 pnpm add @temporalio-web/consent-banner
 ```
 
-Register the element (side-effectful — defines the custom element):
+Register the element (side-effectful and defines the custom element):
 
 ```ts
 import "@temporalio-web/consent-banner";
@@ -53,7 +53,7 @@ Or use the framework-free consent logic without the element or Lit:
 import { resolveConsentRegime } from "@temporalio-web/consent-banner/core";
 ```
 
-The package ships compiled ESM + `.d.ts` — consumers need no extra transpile
+The package ships compiled ESM + `.d.ts`. Consumers need no extra transpile
 step. Because the element calls `customElements.define`, register it on the
 client in SSR frameworks. The `./core` entry is DOM-free and safe on the server.
 
@@ -85,10 +85,47 @@ build output filenames are always `consent-banner.{es,iife}.js`.
 
 ```sh
 pnpm install
-pnpm dev        # Vite dev server
+pnpm dev        # Vite dev server (demo page at http://localhost:5173)
 pnpm check      # type-check
 pnpm test       # unit + behavior + bundle tests
 pnpm build      # emit dist/ (compiled ESM + types + consent-banner.{es,iife}.js)
+```
+
+### Manual / visual testing
+
+`pnpm dev` serves `index.html`, a demo page that mounts
+`<temporal-consent-banner>` against the live source (edits hot-reload). It is a
+dev-only harness: nothing in it ships to npm (the published package is
+`"files": ["dist"]`).
+
+1. Run `pnpm dev` and open http://localhost:5173.
+2. Resize the window **under 640px** (or use the browser device toolbar) to
+   check the mobile layout. All action buttons should share the same height and
+   padding.
+
+**Previewing each regime.** The dev server stubs `/api/geo` and resolves the
+regime from query params (the same `country` / `region` / `gpc` the element
+forwards, using the real `resolveConsentRegime`), so you can exercise every
+variant:
+
+| URL                                                 | Regime                             |
+| --------------------------------------------------- | ---------------------------------- |
+| `http://localhost:5173/`                            | `opt_in` (GDPR-style, full banner) |
+| `http://localhost:5173/?country=US&region=CA`       | `us_opt_out` (Do not sell)         |
+| `http://localhost:5173/?country=US&region=NY`       | `us_basic`                         |
+| `http://localhost:5173/?country=US&region=CA&gpc=1` | `us_opt_out` with GPC              |
+
+**Banner not showing?** A prior decision is persisted in **both**
+`localStorage` **and** a `consent` cookie, and the element re-adopts the cookie
+on load — so a plain reload keeps the banner hidden. Use the demo page's
+**Clear stored consent & reload** button (it clears localStorage, sessionStorage,
+and the `consent` cookie), or run in the console:
+
+```js
+localStorage.clear();
+sessionStorage.clear();
+document.cookie = "consent=; path=/; max-age=0; SameSite=Lax";
+location.reload();
 ```
 
 ## Project structure
@@ -99,14 +136,15 @@ src/
   element/
     consent-banner.ts             <temporal-consent-banner> (TemporalConsentBanner)
   core/                           framework-free consent logic
+index.html                        dev-only demo page (served by `pnpm dev`)
 vercel.json                       /v1/ CDN rewrites
-vite.config.ts                    bundle build (Lit bundled)
+vite.config.ts                    bundle build (Lit bundled) + dev /api/geo stub
 tsconfig.build.json               compiled ESM + .d.ts emit (Lit external)
 ```
 
 ## Publishing
 
-Published to the public npm registry via **OIDC trusted publishing** — no npm
+Published to the public npm registry via **OIDC trusted publishing**. No npm
 token is stored anywhere. Provenance is generated automatically.
 
 Prerequisites (one-time, on npmjs.com): a trusted publisher is configured for
@@ -121,7 +159,7 @@ To cut a release:
 3. Draft a GitHub Release for that tag.
 
 Publishing the Release triggers `.github/workflows/publish.yml`, which builds,
-tests, and runs `npm publish` under OIDC — attaching a provenance attestation.
+tests, and runs `npm publish` under OIDC, attaching a provenance attestation.
 npm refuses to republish an existing version, so the version bump gates every
 publish. Merging a PR does **not** publish; a maintainer cuts a Release when a
 new version is ready.

@@ -795,6 +795,10 @@ export class TemporalConsentBanner extends LitElement {
         flex-direction: row;
         gap: 1rem;
       }
+
+      .actions .btn {
+        flex: 1 1 0;
+      }
     }
 
     .btn {
@@ -825,14 +829,6 @@ export class TemporalConsentBanner extends LitElement {
       .btn {
         font-size: 1rem;
       }
-    }
-
-    /* Equal-width buttons only within the horizontal actions row. Applying
-       flex-grow to the base .btn would collapse the Save Preferences button's
-       height inside the column-direction .preferences container (flex-basis: 0
-       on the main axis overrides the fixed height). */
-    .actions .btn {
-      flex: 1 1 0;
     }
 
     .btn:hover {
