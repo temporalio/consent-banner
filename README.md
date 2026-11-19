@@ -115,6 +115,9 @@ variant:
 | `http://localhost:5173/?country=US&region=NY`       | `us_basic`                         |
 | `http://localhost:5173/?country=US&region=CA&gpc=1` | `us_opt_out` with GPC              |
 
+For a US visitor, a missing or unrecognized region falls back to `us_opt_out`.
+Recognized US territories use `us_basic`.
+
 **Banner not showing?** A prior decision is persisted in **both**
 `localStorage` **and** a `consent` cookie, and the element re-adopts the cookie
 on load — so a plain reload keeps the banner hidden. Use the demo page's

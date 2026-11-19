@@ -160,6 +160,15 @@ describe('readConsentFromCookieString', () => {
     expect(readConsentFromCookieString('')).toEqual(defaultConsent());
   });
 
+  test.each(['%', '%E0%A4%A', '%FF'])(
+    'returns undecided default for invalid percent-encoding %s',
+    (value) => {
+      expect(readConsentFromCookieString(`consent=${value}`)).toEqual(
+        defaultConsent(),
+      );
+    },
+  );
+
   test('does not match a cookie whose name contains "consent" as a suffix', () => {
     const value = encodeURIComponent(JSON.stringify(decided()));
     expect(readConsentFromCookieString(`noconsent=${value}`)).toEqual(

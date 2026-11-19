@@ -64,7 +64,14 @@ const readCookieValue = (cookieString: string, key: string): string | null => {
       continue;
     }
 
-    return decodeURIComponent(trimmedPart.slice(key.length + 1));
+    try {
+      return decodeURIComponent(trimmedPart.slice(key.length + 1));
+    } catch (error) {
+      if (error instanceof URIError) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   return null;

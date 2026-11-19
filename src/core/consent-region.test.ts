@@ -90,7 +90,10 @@ describe('resolveConsentRegime', () => {
     expect(resolveConsentRegime('CA', null)).toBe('opt_in');
   });
 
-  test.each(['CA', 'VA', 'CO', 'CT', 'UT', 'TX', 'OR', 'MT'])(
+  test.each([
+    'CA', 'VA', 'CO', 'CT', 'UT', 'TX', 'OR', 'MT', 'IA', 'DE',
+    'NJ', 'NH', 'NE', 'MD', 'MN', 'TN', 'IN', 'KY', 'RI',
+  ])(
     'resolves us_opt_out for US opt-out state %s',
     (region) => {
       expect(resolveConsentRegime('US', region)).toBe('us_opt_out');
@@ -101,10 +104,22 @@ describe('resolveConsentRegime', () => {
     expect(resolveConsentRegime('US', 'CA')).toBe('us_opt_out');
   });
 
-  test.each(['FL', 'NY', 'WA', null, undefined, ''])(
-    'resolves us_basic for non-opt-out US region %s',
+  test.each([
+    'AL', 'AK', 'AZ', 'AR', 'FL', 'GA', 'HI', 'ID', 'IL', 'KS',
+    'LA', 'ME', 'MA', 'MI', 'MS', 'MO', 'NV', 'NM', 'NY', 'NC',
+    'ND', 'OH', 'OK', 'PA', 'SC', 'SD', 'VT', 'WA', 'WV', 'WI',
+    'WY', 'DC', 'AS', 'GU', 'MP', 'PR', 'UM', 'VI',
+  ])(
+    'resolves us_basic for recognized non-opt-out US region %s',
     (region) => {
       expect(resolveConsentRegime('US', region)).toBe('us_basic');
+    },
+  );
+
+  test.each([null, undefined, '', 'ZZ', 'US-CA'])(
+    'fails safe to us_opt_out for missing or unrecognized US region %s',
+    (region) => {
+      expect(resolveConsentRegime('US', region)).toBe('us_opt_out');
     },
   );
 

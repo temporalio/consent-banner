@@ -67,6 +67,34 @@ afterEach(() => {
 });
 
 describe("TemporalConsentBanner rendering by regime", () => {
+  it("resolves geo and shows the opt_in notice with a malformed consent cookie", async () => {
+    document.cookie = "consent=%E0%A4%A; path=/";
+    const gtag = vi.fn();
+    (window as unknown as { gtag: unknown }).gtag = gtag;
+    mockGeo("opt_in");
+
+    const el = await mount();
+
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(el.shadowRoot?.querySelector(".notice")).not.toBeNull();
+    expect(el._consent).toMatchObject({
+      decided: false,
+      analytics: false,
+      advertising: false,
+    });
+    expect(readConsent()).toBeNull();
+    expect(gtag).not.toHaveBeenCalledWith(
+      "consent",
+      "update",
+      expect.objectContaining({ analytics_storage: "granted" }),
+    );
+    expect(gtag).not.toHaveBeenCalledWith(
+      "consent",
+      "update",
+      expect.objectContaining({ ad_storage: "granted" }),
+    );
+  });
+
   it("shows the opt_in notice with Accept All / Reject All / Customize", async () => {
     mockGeo("opt_in");
     const el = await mount();
