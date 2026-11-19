@@ -51,7 +51,7 @@
   },
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build",
-    "dev": "vite build --watch",
+    "dev": "vite",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:bundle": "vite build && vitest run",
