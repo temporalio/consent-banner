@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.4]
+
+### Fixed
+
+- Treat invalid percent-encoding in the consent cookie as undecided instead of
+  throwing and preventing the banner from initializing.
+- Resolve missing or unrecognized US regions to `us_opt_out` rather than
+  `us_basic`, while keeping recognized non-opt-out states and territories on
+  `us_basic`.
+
 ## [1.0.3]
 
 ### Fixed
@@ -49,7 +59,8 @@ are otherwise unchanged.
 - Consent-regime resolution (`opt_in` / `us_opt_out` / `us_basic` / `row`), GPC
   handling, and Google Consent Mode signal fan-out.
 
-[Unreleased]: https://github.com/temporalio/consent-banner/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/temporalio/consent-banner/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/temporalio/consent-banner/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/temporalio/consent-banner/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/temporalio/consent-banner/compare/v1.0.0...v1.0.2
 [1.0.0]: https://github.com/temporalio/consent-banner/releases/tag/v1.0.0

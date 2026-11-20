@@ -126,6 +126,14 @@ const US_OPT_OUT_STATES: ReadonlySet<string> = new Set([
   "RI", // Rhode Island (RIDTPPA)
 ]);
 
+const US_BASIC_REGIONS: ReadonlySet<string> = new Set([
+  "AL", "AK", "AZ", "AR", "FL", "GA", "HI", "ID", "IL", "KS",
+  "LA", "ME", "MA", "MI", "MS", "MO", "NV", "NM", "NY", "NC",
+  "ND", "OH", "OK", "PA", "SC", "SD", "VT", "WA", "WV", "WI",
+  "WY", "DC",
+  "AS", "GU", "MP", "PR", "UM", "VI",
+]);
+
 /**
  * The consent regime that applies to a visitor, used to pick the right cookie
  * experience:
@@ -133,7 +141,7 @@ const US_OPT_OUT_STATES: ReadonlySet<string> = new Set([
  *                  all optional categories off, banner required.
  * - `us_opt_out` — US states with opt-out privacy laws: opt-out model with a
  *                  "Do Not Sell or Share" control.
- * - `us_basic`   — other US states: simple notice with Accept/Decline.
+ * - `us_basic`   — other US states and territories: simple notice with Accept/Decline.
  * - `row`        — everywhere else: same simple notice as `us_basic`.
  */
 export type ConsentRegime = "opt_in" | "us_opt_out" | "us_basic" | "row";
@@ -153,9 +161,10 @@ export const isConsentRegime = (value: unknown): value is ConsentRegime =>
 /**
  * Resolve a visitor's consent regime from their country and (for the US) region.
  *
- * Fails safe: a missing country resolves to `opt_in` (strictest). The country
- * vs. region split avoids the `CA` collision — `CA` as a country is Canada
- * (opt-in), while `CA` as a US region is California (us_opt_out).
+ * Fails safe: a missing country resolves to `opt_in` (strictest); a missing or
+ * unrecognized US region resolves to `us_opt_out`. The country vs. region split
+ * avoids the `CA` collision — `CA` as a country is Canada (opt-in), while `CA`
+ * as a US region is California (us_opt_out).
  */
 export const resolveConsentRegime = (
   country: string | null | undefined,
@@ -173,9 +182,10 @@ export const resolveConsentRegime = (
 
   if (countryCode === "US") {
     const stateCode = region?.toUpperCase();
-    return stateCode && US_OPT_OUT_STATES.has(stateCode)
-      ? "us_opt_out"
-      : "us_basic";
+    if (!stateCode || US_OPT_OUT_STATES.has(stateCode)) {
+      return "us_opt_out";
+    }
+    return US_BASIC_REGIONS.has(stateCode) ? "us_basic" : "us_opt_out";
   }
 
   return "row";
